@@ -1,0 +1,15 @@
+{
+  "verbose": true,
+  "exec": "babel-node app.js --presets es2015,es2017,stage-2",
+  "events": {
+    "restart": "osascript -e 'display notification \"App restarted due to:\n'$FILENAME'\" with title \"nodemon\"'"
+  },
+  "ignore": [
+    ".git",
+    ".idea",
+    "/test/",
+    "./test/",
+    "node_modules/**/node_modules"
+  ],
+  "ext": "js json"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "node-thecodinglove-scraper",
+  "version": "0.0.1",
+  "description": "Thecodinglove.com scraping with nodejs",
+  "main": "app.js",
+  "author": "Krbz",
+  "private": false,
+  "scripts": {
+    "test": "",
+    "start": "npm-run-all --parallel lint start:server",
+    "start:server": "nodemon --watch ./",
+    "lint": "eslint . --ext .js",
+    "kill3000": "kill `sudo lsof -t -i:3000`"
+  },
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "eslint": "^3.16.1",
+    "express": "^4.15.0",
+    "nodemon": "^1.11.0",
+    "npm-run-all": "^4.0.2",
+    "request": "^2.79.0"
+  }
+}
