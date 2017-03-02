@@ -41,3 +41,7 @@ jspm_packages
 
 # Yarn dependecies lock file
 yarn.lock
+
+# Application local config files
+config/database.json
+config/secrets.json
