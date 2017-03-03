@@ -8,7 +8,8 @@ const url = `${db.adapter}://${db.user}:${db.password}@${db.host}:${db.port}/${d
 function connect() {
     const options = { server: { socketOptions: { keepAlive: 1 } } };
 
-    console.log('Connecting to database...');
+    console.info('Connecting to database...');
+
     return mongoose.connect(url, options)
         .connection
         .on('error', error)
@@ -22,20 +23,20 @@ function error (err) {
 
 function connected () {
     console.log(`Mongoose default connection open to: ${url}`);
+
+    /**
+     * If the Node process ends, close the Mongoose connection
+     */
+    process.on('SIGINT', function() {
+        mongoose.connection.close(() => {
+            console.log('Mongoose default connection disconnected through app termination');
+            process.exit(0);
+        });
+    });
 }
 
 function disconnected () {
     console.log('Mongoose default connection disconnected');
 }
-
-/**
- * If the Node process ends, close the Mongoose connection
- */
-process.on('SIGINT', function() {
-    mongoose.connection.close(() => {
-        console.log('Mongoose default connection disconnected through app termination');
-        process.exit(0);
-    });
-});
 
 export default connect;

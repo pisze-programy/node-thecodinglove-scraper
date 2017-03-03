@@ -13,6 +13,7 @@ Thecodinglove.com scraping using express
 * [Body-Parser](https://github.com/expressjs/body-parser) – Node.js body parsing middleware
 * [Cheerio](https://github.com/cheeriojs/cheerio) – Fast, flexible, and lean implementation of core jQuery designed specifically for the server
 * [Nodemon](https://github.com/remy/nodemon) – Monitor for any changes in your node.js application and automatically restart the server - perfect for development
+* [Node-cron](https://github.com/ncb000gt/node-cron) – Cron jobs for your node
 
 ## License
 MIT © [Krystian Błaszczyk](https://github.com/Krbz)
