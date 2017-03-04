@@ -28,6 +28,8 @@ function connected () {
      * If the Node process ends, close the Mongoose connection
      */
     process.on('SIGINT', function() {
+        console.log('SIGINT');
+
         mongoose.connection.close(() => {
             console.log('Mongoose default connection disconnected through app termination');
             process.exit(0);
