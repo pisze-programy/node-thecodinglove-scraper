@@ -117,6 +117,7 @@ export default class Scrapper {
          * @param boolean? immediateStart - Whether to start scheduler immediately after create - @optional
          */
         cron.schedule(this.time, () => {
+
             /**
              * Simplified HTTP request method
              *
@@ -139,13 +140,12 @@ export default class Scrapper {
 
                 const LastPost = this.createPostModel(last);
 
-                PostsModel.findOne({'post_id': last.post_id}, (error, post) => {
-                    if (error) return console.warn(`Error while connecting to database: ${error.error}, Message: ${error.message}`);
+                PostsModel.findOne({post_id: LastPost.post_id}, (error, post) => {
+                    if (error) return console.warn(`Error while fetching database data: ${error.error}, Message: ${error.message}`);
                     if (post) return console.info(`In database there is post with id: ${post.post_id}, exiting`);
 
-                    PostsModel.create(LastPost, (err) => {
-                        if (err) return console.warn(`Error while connecting to database: ${err.errors}, Message: ${err.message}`);
-                        console.log('saved');
+                    PostsModel.create(LastPost, (error) => {
+                        if (error) return console.warn(`Error while saving data to database: ${error.error}, Message: ${error.message}`);
                     });
                 });
             });

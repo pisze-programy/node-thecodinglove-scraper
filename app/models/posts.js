@@ -3,7 +3,9 @@ const Schema = mongoose.Schema;
 
 const PostSchema = new Schema({
     author: {
-        type: String
+        default: null,
+        type: String,
+        required: false
     },
     img: {
         type: String,
@@ -13,7 +15,7 @@ const PostSchema = new Schema({
         type: String,
         required: true
     },
-    id: {
+    post_id: {
         unique: true,
         required: true,
         type: String
