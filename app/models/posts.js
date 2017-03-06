@@ -3,12 +3,10 @@ const Schema = mongoose.Schema;
 
 const PostSchema = new Schema({
     author: {
-        type: String,
-        required: false
+        type: String
     },
     img: {
         type: String,
-        unique: true,
         required: true
     },
     title: {
@@ -16,6 +14,8 @@ const PostSchema = new Schema({
         required: true
     },
     id: {
+        unique: true,
+        required: true,
         type: String
     },
     created_at: {
@@ -23,11 +23,5 @@ const PostSchema = new Schema({
         default: Date.now
     }
 });
-
-//////////////////////////////////////////////////////////
-
-PostSchema.methods.findPost = function (key, next) {
-    return this.model('Posts').findOne(key, (err, user) => next(err, user));
-};
 
 export default mongoose.model('Posts', PostSchema);

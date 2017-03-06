@@ -4,36 +4,47 @@ import request from 'request';
 import PostsModel from '../app/models/posts';
 
 export default class Scrapper {
-    static getLastPost (posts) {
-        const post = posts.first();
-
-        return {
-            id: Scrapper.getPostId(post),
-            title: Scrapper.getPostTitle(post),
-            url: Scrapper.getPostUrl(post),
-            img: Scrapper.getPostImg(post),
-            author: Scrapper.getPostAuthor(post)
-        };
-    }
-
+    /**
+     * Get Post Title
+     * @param post
+     * @return string
+     */
     static getPostTitle (post) {
         const titleElement = post.find('h3');
 
         return titleElement.text();
     }
 
+    /**
+     * Get Post URL
+     * @param post
+     * @return string
+     */
     static getPostUrl (post) {
         const urlElement = post.find('h3').find('a');
 
         return urlElement.attr('href');
     }
 
+    /**
+     * Get Post Image
+     * @param post
+     * @return string
+     */
     static getPostImg (post) {
         const imgElement = post.find('img');
 
         return imgElement.attr('src');
     }
 
+    /**
+     * Get Post Id
+     *
+     * To get Id trim href and get post id
+     *
+     * @param post
+     * @return string
+     */
     static getPostId (post) {
         const urlElement = post.find('h3').find('a');
         const url = urlElement.attr('href');
@@ -42,6 +53,14 @@ export default class Scrapper {
         return trimmed[1];
     }
 
+    /**
+     * Get Post Author
+     *
+     * If there is no author, return null
+     *
+     * @param post
+     * @return string ? null
+     */
     static getPostAuthor (post) {
         const authorElement = post.find('p').find('i').first();
 
@@ -57,12 +76,30 @@ export default class Scrapper {
         this.url = url;
 
         this.state = {
-            id: null,
+            post_id: null,
             title: '',
             url: '',
             img: '',
             author: null
         };
+    }
+
+    /**
+     * Create Post Model (Mongoose model)
+     *
+     * Collect post object data
+     *
+     * @param post - Set Cheerio element e.g. $('.post').first()
+     * @returns {{id: string, title: string, url: string, img: string, author: string ? null}}
+     */
+    createPostModel (post) {
+        return new PostsModel({
+            post_id: Scrapper.getPostId(post),
+            title: Scrapper.getPostTitle(post),
+            url: Scrapper.getPostUrl(post),
+            img: Scrapper.getPostImg(post),
+            author: Scrapper.getPostAuthor(post)
+        });
     }
 
     runCron () {
@@ -98,22 +135,20 @@ export default class Scrapper {
 
                 const $ = cheerio.load(html);
                 const posts = $('.post');
-                const last = Scrapper.getLastPost(posts);
-                const preparePost = Object.assign({}, this.state, last);
+                const last = posts.first();
 
-                const Posts = new PostsModel(preparePost);
+                const LastPost = this.createPostModel(last);
 
-                Posts.findPost({'id': last.id}, (err, post) => {
-                    if (error) return console.warn(`Error while connecting to database: ${err.errors}, Message: ${err.message}`);
-                    if (post) return console.info(`In database there is post with id: ${last.id}, exiting`);
+                PostsModel.findOne({'post_id': last.post_id}, (error, post) => {
+                    if (error) return console.warn(`Error while connecting to database: ${error.error}, Message: ${error.message}`);
+                    if (post) return console.info(`In database there is post with id: ${post.post_id}, exiting`);
 
-                    PostsModel.create(Posts, (err) => {
+                    PostsModel.create(LastPost, (err) => {
                         if (err) return console.warn(`Error while connecting to database: ${err.errors}, Message: ${err.message}`);
+                        console.log('saved');
                     });
                 });
-            })
+            });
         });
     }
-
-
 }
