@@ -25,7 +25,7 @@ const app = express();
 const env = process.env.ENV || 'development';
 const port = process.env.PORT || config[env].port;
 const cronSchedule = config[env].cron || '* * * * *';
-const url = config[env].url;
+const baseURL = config[env].url;
 
 /**
  * Start application
@@ -34,7 +34,7 @@ const url = config[env].url;
  * Start Scraping
  */
 new Database();
-new Scraper({cronSchedule, url}).runCron();
+new Scraper({cronSchedule, baseURL}).runCron();
 
 /**
  *  Initialize server with port from env or config file

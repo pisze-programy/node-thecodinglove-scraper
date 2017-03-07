@@ -10,7 +10,7 @@ export default class Scrapper {
      * @return string
      */
     static getPostTitle (post) {
-        const titleElement = post.find('h3');
+        const titleElement = post.find('h3').eq(0);
 
         return titleElement.text();
     }
@@ -50,6 +50,7 @@ export default class Scrapper {
         const url = urlElement.attr('href');
         const trimmed = /post\/(\d+)\//.exec(url);
 
+        if (!trimmed) return '';
         return trimmed[1];
     }
 
@@ -71,19 +72,6 @@ export default class Scrapper {
         return null;
     }
 
-    constructor ({cronSchedule, url}) {
-        this.time = cronSchedule;
-        this.url = url;
-
-        this.state = {
-            post_id: null,
-            title: '',
-            url: '',
-            img: '',
-            author: null
-        };
-    }
-
     /**
      * Create Post Model (Mongoose model)
      *
@@ -92,21 +80,150 @@ export default class Scrapper {
      * @param post - Set Cheerio element e.g. $('.post').first()
      * @returns {{id: string, title: string, url: string, img: string, author: string ? null}}
      */
-    createPostModel (post) {
-        return new PostsModel({
+    static createPostModel (post) {
+        return {
             post_id: Scrapper.getPostId(post),
             title: Scrapper.getPostTitle(post),
             url: Scrapper.getPostUrl(post),
             img: Scrapper.getPostImg(post),
             author: Scrapper.getPostAuthor(post)
+        };
+    }
+
+    constructor ({cronSchedule, baseURL}) {
+        this.time = cronSchedule;
+        this.html = {};
+
+        this.errors = {
+            notFoundPost: 'notFoundPost',
+            exists: 'exists',
+            fetchError: 'fetchError'
+        };
+
+        this.state = {
+            page: 1,
+            post: 0
+        };
+
+        this.URL = `${baseURL}`;
+    }
+
+    /**
+     * Handle Pagination for scraper
+     *
+     * If current site is equal 0, do not serve /page/1,
+     * thecodinglove.com redirect to / and request module has problem to handle posts
+     */
+    pagination (page) {
+        if (page === 1) {
+            return this.URL;
+        }
+
+        return `${this.URL}/page/${page}`;
+    }
+
+    /**
+     * Create Post in Database
+     *
+     * Check if Post with ${Model.post_id} exists,
+     * if exists, return with error
+     * if not exists, create new Post
+     *
+     * @param Model - Mongoose DB Model
+     * @param callback
+     *
+     * Callback params:
+     *
+     * Error - error while fetching data
+     * PostId - pass a post id
+     */
+    createDatabasePost (Model, callback) {
+        return PostsModel.findOne({post_id: Model.post_id}, (error, post) => {
+            if (error) return callback({
+                method: this.errors.fetchError,
+                message: `Error while fetching database data: ${JSON.stringify(error)}, Message: ${error.message}`
+            });
+
+            if (post) return callback({
+                method: this.errors.exists,
+                message: `In database there is post with id: ${post.post_id}, exiting`
+            });
+
+            PostsModel.create(Model, (error) => {
+                if (error) return callback({
+                    method: this.errors.fetchError,
+                    message: `Error while saving data to database: ${JSON.stringify(error)}, Message: ${error.message}`
+                });
+
+                callback(null, Model.post_id);
+            });
         });
     }
 
+    /**
+     * Simplified HTTP request method
+     *
+     * @param callback
+     *
+     * Callback params:
+     *
+     * Error - error while fetching data
+     *
+     * Method using Fetch module from npm, more options:
+     * info: https://www.npmjs.com/package/request#requestoptions-callback
+     *
+     */
+    fetchData (callback) {
+        if (!Object.keys(this.html).length) {
+            const url = this.pagination(this.state.page);
+
+            return request(url, (error, response, html) => {
+                if (error) return callback({
+                    method: this.errors.fetchError,
+                    message: `Error while requesting a url ${url}, Error: ${JSON.stringify(error)}`
+                });
+
+                this.html = html;
+
+                return callback(null);
+            });
+        }
+
+        return callback(null);
+    }
+
+    /**
+     * Fetching a post from data method
+     *
+     * @param callback
+     *
+     * Callback params:
+     *
+     * Error - error while fetching data
+     * PostId - pass a post id
+     *
+     */
+    fetchPost (callback) {
+        const $ = cheerio.load(this.html);
+        const posts = $('.post');
+        const current = posts.eq(this.state.post);
+
+        if (!current.length) return callback({
+            method: this.errors.notFoundPost,
+            message:`Error while fetching element, cannot find: $('.post').eq(${this.state.post})`
+        });
+
+        return callback(null, current);
+    }
+
+    /**
+     * Method to handle Scraper,
+     * For future purpose should only handle cron and method that you pass
+     *
+     * TODO: Refactor method for Single Responsibility
+     */
     runCron () {
-        /**
-         * If Class has not schedule time exit method
-         */
-        if (!this.time) console.warn('Config time schedule for your cron');
+        if (!this.time) return console.warn('Config time schedule for your cron');
 
         /**
          * Crone schedule
@@ -116,39 +233,37 @@ export default class Scrapper {
          * @param !Function func - Task to be executed
          * @param boolean? immediateStart - Whether to start scheduler immediately after create - @optional
          */
-        cron.schedule(this.time, () => {
+        // cron.schedule(this.time, () => {});
 
-            /**
-             * Simplified HTTP request method
-             *
-             * @param options - The first argument can be either a url or an options object
-             * @param callback
-             * info: https://www.npmjs.com/package/request#requestoptions-callback
-             *
-             * Callback params:
-             *
-             * error - get error while connect
-             * response - get response
-             * param html - get html from request
-             */
-            request(this.url, (error, response, html) => {
-                if (error) return console.warn(`Error while requesting a url ${this.url}, Error: ${error}`);
+        setInterval(() => {
 
-                const $ = cheerio.load(html);
-                const posts = $('.post');
-                const last = posts.first();
+            console.log('Fetching', this.state.post, 'at page', this.state.page, 'url:', this.pagination(this.state.page));
 
-                const LastPost = this.createPostModel(last);
+            this.fetchData((error) => {
+                if (error && error.method === this.errors.fetchError) return console.warn(error.message);
 
-                PostsModel.findOne({post_id: LastPost.post_id}, (error, post) => {
-                    if (error) return console.warn(`Error while fetching database data: ${error.error}, Message: ${error.message}`);
-                    if (post) return console.info(`In database there is post with id: ${post.post_id}, exiting`);
+                this.fetchPost((error, currentElement) => {
+                    if (error && error.method === this.errors.exists) return console.info(error.message);
 
-                    PostsModel.create(LastPost, (error) => {
-                        if (error) return console.warn(`Error while saving data to database: ${error.error}, Message: ${error.message}`);
+                    if (error && error.method === this.errors.notFoundPost) {
+                        this.state.page = this.state.page + 1;
+                        this.state.post = 0;
+                        this.html = {};
+
+                        return console.info(error.message)
+                    }
+
+                    const Model = new PostsModel(Scrapper.createPostModel(currentElement));
+
+                    this.createDatabasePost(Model, (error, postId) => {
+                        if (error && error.method === this.errors.exists) return console.warn(error.message);
+
+                        console.info(`Scraped post with id: ${postId}`);
+                        return this.state.post = this.state.post + 1;
                     });
                 });
             });
-        });
+
+        }, 1000)
     }
 }
