@@ -23,7 +23,7 @@ Note2: Remember that first cron job will start immediate but job will be execute
 
 ### 2. Enjoy thecodinglove scraper.
 
-Remember, it is not cool to DDOS cool sites. [Thecodinglove.com](http://www.thecodinglove.com) is super cool. Do not set cron job if u do not need it.
+Remember, it is not cool to DDoS cool sites. [Thecodinglove.com](http://www.thecodinglove.com) is super cool. Do not set cron job if u do not need it.
 
 ## Dependecies
 
