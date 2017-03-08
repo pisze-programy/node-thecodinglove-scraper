@@ -102,7 +102,8 @@ export default class Scrapper {
 
         this.state = {
             page: 1,
-            post: 0
+            post: 0,
+            error: {}
         };
 
         this.URL = `${baseURL}`;
@@ -140,18 +141,18 @@ export default class Scrapper {
     createDatabasePost (Model, callback) {
         return PostsModel.findOne({post_id: Model.post_id}, (error, post) => {
             if (error) return callback({
-                method: this.errors.fetchError,
+                stack: this.errors.fetchError,
                 message: `Error while fetching database data: ${JSON.stringify(error)}, Message: ${error.message}`
             });
 
             if (post) return callback({
-                method: this.errors.exists,
+                stack: this.errors.exists,
                 message: `In database there is post with id: ${post.post_id}, exiting`
             });
 
             PostsModel.create(Model, (error) => {
                 if (error) return callback({
-                    method: this.errors.fetchError,
+                    stack: this.errors.fetchError,
                     message: `Error while saving data to database: ${JSON.stringify(error)}, Message: ${error.message}`
                 });
 
@@ -161,7 +162,7 @@ export default class Scrapper {
     }
 
     /**
-     * Simplified HTTP request method
+     * Simplified HTTP request stack
      *
      * @param callback
      *
@@ -179,7 +180,7 @@ export default class Scrapper {
 
             return request(url, (error, response, html) => {
                 if (error) return callback({
-                    method: this.errors.fetchError,
+                    stack: this.errors.fetchError,
                     message: `Error while requesting a url ${url}, Error: ${JSON.stringify(error)}`
                 });
 
@@ -193,7 +194,7 @@ export default class Scrapper {
     }
 
     /**
-     * Fetching a post from data method
+     * Fetching a post from data stack
      *
      * @param callback
      *
@@ -209,7 +210,7 @@ export default class Scrapper {
         const current = posts.eq(this.state.post);
 
         if (!current.length) return callback({
-            method: this.errors.notFoundPost,
+            stack: this.errors.notFoundPost,
             message:`Error while fetching element, cannot find: $('.post').eq(${this.state.post})`
         });
 
@@ -233,37 +234,72 @@ export default class Scrapper {
          * @param !Function func - Task to be executed
          * @param boolean? immediateStart - Whether to start scheduler immediately after create - @optional
          */
-        // cron.schedule(this.time, () => {});
+        const task = cron.schedule(this.time, () => {
+            const fetchDataInterval = setInterval(() => {
+                console.info('Fetching', this.state.post, 'at page', this.state.page, 'url:', this.pagination(this.state.page));
 
-        setInterval(() => {
+                this.fetchData((error) => {
+                    if (error && error.stack === this.errors.fetchError) {
+                        if ('stack' in this.state.error && this.state.error.stack === this.errors.notFoundPost) {
+                            console.warn('There is problem with connection');
 
-            console.log('Fetching', this.state.post, 'at page', this.state.page, 'url:', this.pagination(this.state.page));
+                            this.state.error = {};
 
-            this.fetchData((error) => {
-                if (error && error.method === this.errors.fetchError) return console.warn(error.message);
+                            return clearInterval(fetchDataInterval);
+                        }
 
-                this.fetchPost((error, currentElement) => {
-                    if (error && error.method === this.errors.exists) return console.info(error.message);
+                        Object.assign(this.state.error, error);
 
-                    if (error && error.method === this.errors.notFoundPost) {
-                        this.state.page = this.state.page + 1;
-                        this.state.post = 0;
-                        this.html = {};
-
-                        return console.info(error.message)
+                        return console.warn(error.message);
                     }
 
-                    const Model = new PostsModel(Scrapper.createPostModel(currentElement));
+                    this.fetchPost((error, currentElement) => {
+                        if (error && error.stack === this.errors.notFoundPost) {
+                            if ('stack' in this.state.error && this.state.error.stack === this.errors.notFoundPost) {
+                                console.warn('There is no more post in, exiting interval');
 
-                    this.createDatabasePost(Model, (error, postId) => {
-                        if (error && error.method === this.errors.exists) return console.warn(error.message);
+                                this.state.error = {};
 
-                        console.info(`Scraped post with id: ${postId}`);
-                        return this.state.post = this.state.post + 1;
+                                return clearInterval(fetchDataInterval);
+                            }
+
+                            Object.assign(this.state.error, error);
+
+                            this.state.page = this.state.page + 1;
+                            this.state.post = 0;
+                            this.html = {};
+
+                            return console.info(error.message);
+                        }
+
+                        const Model = new PostsModel(Scrapper.createPostModel(currentElement));
+
+                        this.createDatabasePost(Model, (error, postId) => {
+                            if (error && error.stack === this.errors.exists) {
+                                if ('stack' in this.state.error && this.state.error.stack === this.errors.exists) {
+                                    console.warn('Your database is up-to-date, exiting');
+
+                                    this.state.error = {};
+
+                                    return clearInterval(fetchDataInterval);
+                                }
+
+                                Object.assign(this.state.error, error);
+
+                                return console.warn(error.message);
+                            }
+
+                            this.state.error = {};
+                            console.info(`Scraped post with id: ${postId}`);
+
+                            return this.state.post = this.state.post + 1;
+                        });
                     });
                 });
-            });
 
-        }, 1000)
+            }, 1000);
+        }, false);
+
+        task.start();
     }
 }

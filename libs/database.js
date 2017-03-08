@@ -19,6 +19,7 @@ function connect() {
 
 function error (err) {
     console.log(`Mongoose default connection error: ${err}`);
+    exit();
 }
 
 function connected () {
@@ -32,13 +33,18 @@ function connected () {
 
         mongoose.connection.close(() => {
             console.log('Mongoose default connection disconnected through app termination');
-            process.exit(0);
+            exit();
         });
     });
 }
 
 function disconnected () {
     console.log('Mongoose default connection disconnected');
+    exit();
+}
+
+function exit () {
+    process.exit(0);
 }
 
 export default connect;
