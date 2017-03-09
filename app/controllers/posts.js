@@ -1,6 +1,15 @@
+import PostModel from '../models/posts';
+
 export default class {
     GetPosts = (req, res) => {
+        PostModel.find({})
+            .limit(5)
+            .exec((err, posts) => {
+            if (err) return res.json({error: err.errors, Response: {message: err.message}});
+            if (!posts) return res.json({error: true, Response: {message: 'Error while fetching posts'}});
 
+            res.status(200).json(posts);
+        });
     };
 
     Random = (req, res) => {
