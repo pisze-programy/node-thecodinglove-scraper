@@ -18,7 +18,7 @@ Router.route('/').post((req, res) => {
  * Route - /posts
  * Method - GET
  */
-Router.route('/posts').get(new Controllers.Posts().GetPosts);
+Router.route('/posts').post(new Controllers.Posts().GetPosts);
 /**
  * Base route for collecting random post from database
  * Route - /random
@@ -26,4 +26,4 @@ Router.route('/posts').get(new Controllers.Posts().GetPosts);
  */
 Router.route('/random').get(new Controllers.Posts().Random);
 
-module.exports = Router;
+export default Router;

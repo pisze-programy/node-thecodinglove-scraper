@@ -9,6 +9,9 @@ import express from 'express';
 import config from './config/secrets.json';
 import Database from './libs/database';
 import Scraper from './libs/scraper';
+import logger from 'morgan';
+import bodyParser from 'body-parser';
+import Routes from './app/routes';
 
 /**
  *  Init Expressjs app
@@ -35,6 +38,27 @@ const baseURL = config[env].url;
  */
 new Database();
 new Scraper({cronSchedule, baseURL}).runCron();
+
+/**
+ *  Middleware config
+ */
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.disable('etag');
+
+app.use(function(err, req, res, next) {
+    if(err.status !== 404) {
+        return next();
+    }
+
+    res.send(err.message);
+});
+
+/**
+ *  App layer middleware
+ */
+app.use('/api', Routes);
 
 /**
  *  Initialize server with port from env or config file
