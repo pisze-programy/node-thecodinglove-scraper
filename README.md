@@ -1,5 +1,7 @@
-# Node-thecodinglove-scraper
-Work in progress. 
+# Node thecodinglove scraper
+Node scraping using [Express][https://github.com/expressjs/express]. Application is for learn purpose and for future usage. 
+The site which is scraped is [thecodinglove](http://thecodinglove.com).
+If you would like to write own scraper, fill free to fork it. 
 
 ## Usage
 Thecodinglove.com scraping using express.
