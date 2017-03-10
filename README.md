@@ -6,7 +6,7 @@ Thecodinglove.com scraping using express.
 
 ## Quick start
 
-### 1. Copy a config files
+### 1. Copy a config files and fill it
 
 1.1. Database configuration
 ```sh
@@ -17,13 +17,26 @@ $ cp config/database.example.json config/database.json
 ```sh
 $ cp config/secrets.example.json config/secrets.json
 ```
-
 Note: Set the cron schedule in every: config/secrets.json key: [cron](https://github.com/ncb000gt/node-cron)
 Note2: Remember that first cron job will start immediate but job will be executed after this time.
 
-### 2. Enjoy thecodinglove scraper.
+### 2. Install dependecies
+```sh
+$ npm install 
+```
+or
+```sh
+$ yarn
+```
 
-Remember, it is not cool to DDoS cool sites. [Thecodinglove.com](http://www.thecodinglove.com) is super cool. Do not set cron job if u do not need it.
+### 3. Run server
+```sh
+$ npm start
+```
+
+### 4. Enjoy thecodinglove scraper.
+
+Remember, it is not cool to DDoS sites. [Thecodinglove.com](http://www.thecodinglove.com) is super cool. Do not run cron job if u do not need it.
 
 ## Dependecies
 
