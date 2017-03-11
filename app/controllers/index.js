@@ -1,5 +1,5 @@
-import Posts from './posts';
+const Posts = require('./posts');
 
-export default {
+module.exports = {
     Posts
-}
+};

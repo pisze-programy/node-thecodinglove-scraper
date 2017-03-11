@@ -1,5 +1,5 @@
-import app from 'express';
-import Controllers from '../controllers';
+const app = require('express');
+const Controllers = require('../controllers');
 
 const Router = app.Router();
 
@@ -26,4 +26,4 @@ Router.route('/posts').get(new Controllers.Posts().GetPosts);
  */
 Router.route('/random').get(new Controllers.Posts().Random);
 
-export default Router;
+module.exports = Router;

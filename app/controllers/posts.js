@@ -1,6 +1,6 @@
-import PostModel from '../models/posts';
+const PostModel = require('../models/posts');
 
-export default class {
+class Posts {
     GetPosts = (req, res) => {
         PostModel.find({})
             .limit(5)
@@ -31,4 +31,6 @@ export default class {
                 });
         });
     };
-};
+}
+
+module.exports = Posts;

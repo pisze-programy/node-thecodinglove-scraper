@@ -1,9 +1,9 @@
-import cron from 'node-cron';
-import cheerio from 'cheerio';
-import request from 'request';
-import PostsModel from '../app/models/posts';
+const cron = require('node-cron');
+const cheerio = require('cheerio');
+const request = require('request');
+const PostsModel = require('../app/models/posts');
 
-export default class Scrapper {
+class Scrapper {
     /**
      * Get Post Title
      * @param post
@@ -303,3 +303,5 @@ export default class Scrapper {
         task.start();
     }
 }
+
+module.exports = Scrapper;

@@ -10,9 +10,23 @@
     }
   },
   "test": {
-    "main": {}
+      "main": {
+          "adapter": "",
+          "host": "",
+          "port": "",
+          "user": "",
+          "password": "",
+          "database": ""
+      }
   },
   "production": {
-    "main": {}
+      "main": {
+          "adapter": "",
+          "host": "",
+          "port": "",
+          "user": "",
+          "password": "",
+          "database": ""
+      }
   }
 }

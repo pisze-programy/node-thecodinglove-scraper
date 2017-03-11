@@ -1,7 +1,7 @@
-import mongoose from 'mongoose';
-import database from '../config/database.json';
+const mongoose = require('mongoose');
+const database = require('../config/database.json');
 
-const env = process.env.NODE_ENV || 'development';
+const env = process.env.NODE_ENV || 'production';
 const db = database[env].main;
 const url = `${db.adapter}://${db.user}:${db.password}@${db.host}:${db.port}/${db.database}`;
 
@@ -47,4 +47,4 @@ function exit () {
     process.exit(0);
 }
 
-export default connect;
+module.exports = connect;
