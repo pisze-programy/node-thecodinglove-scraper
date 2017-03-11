@@ -45,3 +45,6 @@ yarn.lock
 # Application local config files
 config/database.json
 config/secrets.json
+
+# Ignore log file
+logger.txt

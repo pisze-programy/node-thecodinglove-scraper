@@ -10,6 +10,7 @@ require("babel-register");
 const express = require('express');
 const config = require('./config/secrets.json');
 const Database = require('./libs/database');
+const Logger = require('./libs/logger');
 const Scraper = require('./libs/scraper');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
@@ -19,8 +20,6 @@ const Routes = require('./app/routes');
  *  Init Expressjs app
  */
 const app = express();
-
-console.log(process.env);
 
 /**
  *  Config application application
@@ -68,5 +67,5 @@ app.use('/api', Routes);
  *  Initialize server with port from env or config file
  */
 app.listen(port, () => {
-    console.log(`Server is listening at: ${port}`);
+    Logger({message: `Server is listening at: ${port}`});
 });

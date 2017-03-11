@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const cheerio = require('cheerio');
 const request = require('request');
 const PostsModel = require('../app/models/posts');
+const Logger = require('./logger.js');
 
 class Scrapper {
     /**
@@ -224,7 +225,7 @@ class Scrapper {
      * TODO: Refactor method for Single Responsibility
      */
     runCron () {
-        if (!this.time) return console.warn('Config time schedule for your cron');
+        if (!this.time) return Logger({message: 'Config time schedule for your cron'});
 
         /**
          * Crone schedule
@@ -236,12 +237,12 @@ class Scrapper {
          */
         const task = cron.schedule(this.time, () => {
             const fetchDataInterval = setInterval(() => {
-                console.info('Fetching', this.state.post, 'at page', this.state.page, 'url:', this.pagination(this.state.page));
+                Logger({message: `Fetching ${this.state.post} at page, ${this.state.page}. URL: ${this.pagination(this.state.page)}`});
 
                 this.fetchData((error) => {
                     if (error && error.stack === this.errors.fetchError) {
                         if ('stack' in this.state.error && this.state.error.stack === this.errors.notFoundPost) {
-                            console.warn('There is problem with connection');
+                            Logger({message: 'There is problem with connection'});
 
                             this.state.error = {};
 
@@ -250,13 +251,13 @@ class Scrapper {
 
                         Object.assign(this.state.error, error);
 
-                        return console.warn(error.message);
+                        return Logger({message: error.message});
                     }
 
                     this.fetchPost((error, currentElement) => {
                         if (error && error.stack === this.errors.notFoundPost) {
                             if ('stack' in this.state.error && this.state.error.stack === this.errors.notFoundPost) {
-                                console.warn('There is no more post in, exiting interval');
+                                Logger({message: 'There is no more post in, exiting interval'});
 
                                 this.state.error = {};
 
@@ -269,7 +270,7 @@ class Scrapper {
                             this.state.post = 0;
                             this.html = {};
 
-                            return console.info(error.message);
+                            return Logger({message: error.message});
                         }
 
                         const Model = new PostsModel(Scrapper.createPostModel(currentElement));
@@ -277,7 +278,7 @@ class Scrapper {
                         this.createDatabasePost(Model, (error, postId) => {
                             if (error && error.stack === this.errors.exists) {
                                 if ('stack' in this.state.error && this.state.error.stack === this.errors.exists) {
-                                    console.warn('Your database is up-to-date, exiting');
+                                    Logger({message: 'Your database is up-to-date, exiting'});
 
                                     this.state.error = {};
 
@@ -286,11 +287,11 @@ class Scrapper {
 
                                 Object.assign(this.state.error, error);
 
-                                return console.warn(error.message);
+                                return Logger({message: error.message});
                             }
 
                             this.state.error = {};
-                            console.info(`Scraped post with id: ${postId}`);
+                            Logger({message: `Scraped post with id: ${postId}`});
 
                             return this.state.post = this.state.post + 1;
                         });
