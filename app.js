@@ -59,9 +59,14 @@ app.use(function(err, req, res, next) {
 });
 
 /**
- *  App layer middleware
+ *  App API Routes
  */
 app.use('/api', Routes);
+
+/**
+ *  App static Routes
+ */
+app.use('/static', express.static('logger.txt'));
 
 /**
  *  Initialize server with port from env or config file

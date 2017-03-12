@@ -5,10 +5,11 @@ const env = process.env.NODE_ENV || 'production';
 const debug = secrets[env].debug;
 const console_debug = debug.console;
 const file_debug = debug.file;
+const file_name = debug.filename;
 
 function Logger ({message}) {
     if (file_debug) {
-        const logger = fs.createWriteStream('logger.txt', {
+        const logger = fs.createWriteStream(__dirname + `/../${file_name}`, {
             flags: 'a'
         });
 

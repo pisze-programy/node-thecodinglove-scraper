@@ -48,3 +48,4 @@ config/secrets.json
 
 # Ignore log file
 logger.txt
+\*-debug.log
