@@ -9,7 +9,7 @@ const file_name = debug.filename;
 
 function Logger ({message}) {
     if (file_debug) {
-        const logger = fs.createWriteStream(__dirname + `/../${file_name}`, {
+        const logger = fs.createWriteStream(__dirname + `/../public/${file_name}`, {
             flags: 'a'
         });
 

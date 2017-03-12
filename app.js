@@ -7,6 +7,7 @@
  *  Scrapper - require Scrapper module
  */
 require("babel-register");
+const path = require('path');
 const express = require('express');
 const config = require('./config/secrets.json');
 const Database = require('./libs/database');
@@ -30,7 +31,6 @@ const app = express();
  */
 const env = process.env.NODE_ENV || 'production';
 const port = process.env.PORT || config[env].port;
-const logFile = config[env].debug.filename;
 const cronSchedule = config[env].cron || '* * * * *';
 const baseURL = config[env].url;
 
@@ -67,7 +67,7 @@ app.use('/api', Routes);
 /**
  *  App static Routes
  */
-app.use('/static', express.static(logFile));
+app.use('/static', express.static(path.join(__dirname, 'public')));
 
 /**
  *  Initialize server with port from env or config file
