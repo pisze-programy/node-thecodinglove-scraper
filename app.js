@@ -30,6 +30,7 @@ const app = express();
  */
 const env = process.env.NODE_ENV || 'production';
 const port = process.env.PORT || config[env].port;
+const logFile = config[env].debug.filename;
 const cronSchedule = config[env].cron || '* * * * *';
 const baseURL = config[env].url;
 
@@ -66,7 +67,7 @@ app.use('/api', Routes);
 /**
  *  App static Routes
  */
-app.use('/static', express.static('logger.txt'));
+app.use('/static', express.static(logFile));
 
 /**
  *  Initialize server with port from env or config file
