@@ -17,7 +17,7 @@ function Logger ({message}) {
     }
 
     if (console_debug) {
-        return console.log(`[${new Date()}]: Env: ${env}, Message: ${message}`)
+        console.log(`[${new Date()}]: Env: ${env}, Message: ${message}`)
     }
 }
 

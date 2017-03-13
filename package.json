@@ -1,6 +1,6 @@
 {
     "name": "node-thecodinglove-scraper",
-    "version": "0.0.1",
+    "version": "0.8.0",
     "description": "Thecodinglove.com scraping with nodejs",
     "main": "app.js",
     "author": "Krbz",
